@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>منصة مستر فرج</title>
+
 <style>
 body{
     margin:0;
@@ -10,27 +11,74 @@ body{
     background:#111;
     color:white;
 }
+
 header{
     background:#222;
     padding:10px;
     text-align:center;
     font-size:20px;
 }
-#meet{
+
+.container{
+    display:flex;
     height:90vh;
+}
+
+#meet{
+    width:60%;
+    height:100%;
+}
+
+#boardContainer{
+    width:40%;
+    background:white;
+    position:relative;
+}
+
+canvas{
+    background:white;
+    cursor:crosshair;
+}
+
+.tools{
+    position:absolute;
+    top:10px;
+    left:10px;
+    z-index:10;
+}
+
+button{
+    padding:5px 10px;
+    margin:2px;
+    cursor:pointer;
 }
 </style>
 </head>
+
 <body>
 
 <header>
-منصة مستر فرج - حصة مباشرة
+منصة مستر فرج - بث مباشر + سبورة
 </header>
 
-<div id="meet"></div>
+<div class="container">
+    <div id="meet"></div>
+
+    <div id="boardContainer">
+        <div class="tools">
+            <button onclick="clearBoard()">مسح</button>
+            <button onclick="changeColor('black')">أسود</button>
+            <button onclick="changeColor('red')">أحمر</button>
+            <button onclick="changeColor('blue')">أزرق</button>
+        </div>
+        <canvas id="board"></canvas>
+    </div>
+</div>
 
 <script src="https://meet.jit.si/external_api.js"></script>
+
 <script>
+/* ---------------- JITSI ---------------- */
 const domain = "meet.jit.si";
 
 const options = {
@@ -40,13 +88,54 @@ const options = {
     parentNode: document.querySelector('#meet'),
     userInfo: {
         displayName: "Mr Farag"
-    },
-    configOverwrite: {
-        prejoinPageEnabled: false
     }
 };
 
 const api = new JitsiMeetExternalAPI(domain, options);
+
+
+/* ---------------- WHITEBOARD ---------------- */
+
+const canvas = document.getElementById("board");
+const ctx = canvas.getContext("2d");
+
+let drawing = false;
+let currentColor = "black";
+
+function resizeCanvas(){
+    canvas.width = document.getElementById("boardContainer").clientWidth;
+    canvas.height = document.getElementById("boardContainer").clientHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+canvas.addEventListener("mousedown", () => drawing = true);
+canvas.addEventListener("mouseup", () => {
+    drawing = false;
+    ctx.beginPath();
+});
+canvas.addEventListener("mousemove", draw);
+
+function draw(e){
+    if(!drawing) return;
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = currentColor;
+
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+}
+
+function clearBoard(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+function changeColor(color){
+    currentColor = color;
+}
 </script>
 
 </body>
